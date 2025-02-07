@@ -33,12 +33,16 @@ def addTasks(title):
 def removeTasks(index):
     """Remove a task"""
     tasks = loadTasks()
+    if not tasks or index >= len(tasks):
+        raise IndexError(f"Task index {index + 1} is out of range")
     del tasks[index]
     saveTasks(tasks)
 
 def startTask(index):
     """Start a task (set it to in progress)"""
     tasks = loadTasks()
+    if not tasks or index >= len(tasks):
+        raise IndexError(f"Task index {index + 1} is out of range")
     tasks[index]["in progress"] = True
     tasks[index]["done"] = False
     saveTasks(tasks)
@@ -46,6 +50,8 @@ def startTask(index):
 def completeTask(index):
     """Complete a task (set it to done)"""
     tasks = loadTasks()
+    if not tasks or index >= len(tasks):
+        raise IndexError(f"Task index {index + 1} is out of range")
     tasks[index]["done"] = True
     tasks[index]["in progress"] = False
     saveTasks(tasks)
@@ -53,6 +59,8 @@ def completeTask(index):
 def toggleTasks(index):
     """Toggle task status"""
     tasks = loadTasks()
+    if not tasks or index >= len(tasks):
+        raise IndexError(f"Task index {index + 1} is out of range")
     if tasks[index]["done"]:
         tasks[index]["done"] = False
         tasks[index]["in progress"] = False
@@ -74,24 +82,89 @@ def statusTasks(index):
     else:
         print(f"Task {index + 1} ({task['title']}) is not started")
 
+def updateTask(index, title):
+    """Update a task's title"""
+    tasks = loadTasks()
+    if not tasks or index >= len(tasks):
+        raise IndexError(f"Task index {index + 1} is out of range")
+    tasks[index]["title"] = title
+    saveTasks(tasks)
+
+def listDoneTasks():
+    """List all done tasks"""
+    tasks = loadTasks()
+    done_tasks = [task for task in enumerate(tasks) if task[1]["done"]]
+    for i, task in done_tasks:
+        print(f"{i+1}. {task['title']} [done]")
+
+def listInProgressTasks():
+    """List all in-progress tasks"""
+    tasks = loadTasks()
+    in_progress_tasks = [task for task in enumerate(tasks) if task[1]["in progress"]]
+    for i, task in in_progress_tasks:
+        print(f"{i+1}. {task['title']} [in progress]")
+
+def listNotDoneTasks():
+    """List all not done tasks"""
+    tasks = loadTasks()
+    not_done_tasks = [task for task in enumerate(tasks) if not task[1]["done"]]
+    for i, task in not_done_tasks:
+        print(f"{i+1}. {task['title']} [status]")
+
 def main():
     """Main function"""
     if len(sys.argv) == 1:
         listTasks()
     elif sys.argv[1] == "add":
-        addTasks(sys.argv[2])
+        if len(sys.argv) > 2:
+            addTasks(sys.argv[2])
+        else:
+            print("Error: Task title is required.")
+    elif sys.argv[1] == "update":
+        if len(sys.argv) > 3:
+            updateTask(int(sys.argv[2])-1, sys.argv[3])
+        else:
+            print("Error: Task number and new title are required.")
     elif sys.argv[1] == "remove":
-        removeTasks(int(sys.argv[2])-1)
+        if len(sys.argv) > 2:
+            removeTasks(int(sys.argv[2])-1)
+        else:
+            print("Error: Task number is required.")
     elif sys.argv[1] == "start":
-        startTask(int(sys.argv[2])-1)
+        if len(sys.argv) > 2:
+            startTask(int(sys.argv[2])-1)
+        else:
+            print("Error: Task number is required.")
     elif sys.argv[1] == "complete":
-        completeTask(int(sys.argv[2])-1)
+        if len(sys.argv) > 2:
+            completeTask(int(sys.argv[2])-1)
+        else:
+            print("Error: Task number is required.")
     elif sys.argv[1] == "toggle":
-        toggleTasks(int(sys.argv[2])-1)
+        if len(sys.argv) > 2:
+            toggleTasks(int(sys.argv[2])-1)
+        else:
+            print("Error: Task number is required.")
     elif sys.argv[1] == "status":
-        statusTasks(int(sys.argv[2])-1)
+        if len(sys.argv) > 2:
+            statusTasks(int(sys.argv[2])-1)
+        else:
+            print("Error: Task number is required.")
+    elif sys.argv[1] == "list":
+        if len(sys.argv) > 2:
+            if sys.argv[2] == "done":
+                listDoneTasks()
+            elif sys.argv[2] == "progress":
+                listInProgressTasks()
+            elif sys.argv[2] == "pending":
+                listNotDoneTasks()
+            else:
+                print("Error: Invalid list type. Use 'done', 'progress', or 'pending'")
+        else:
+            listTasks()
     else:
         print("Invalid command")
+        print("Available commands: add, update, remove, start, complete, toggle, status, list")
 
 if __name__ == "__main__":
     main()
